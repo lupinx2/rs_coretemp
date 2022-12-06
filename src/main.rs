@@ -1,6 +1,6 @@
 extern crate sensors_sys;
 
-use std::{env, error::Error};
+use std::{/* env, */ error::Error, /* os::raw::c_void */};
 
 fn main() -> Result<(), Box<dyn Error>> {
 /* this is a function called main
@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 */
 
     // Get the name of the chip to read from from the command line arguments
-    let chip_name = env::args().nth(1).ok_or("missing chip name")?;
+    //let _chip_name: String = env::args().nth(1).ok_or("missing chip name")?;
     /* env::args() returns an iterator over the command line arguments
         nth(1) returns the second argument as an Option
         ok_or() returns the value of the Option as a Result type, if it is Some
@@ -24,17 +24,35 @@ fn main() -> Result<(), Box<dyn Error>> {
             if it is Err, it returns the error message
         */
     
-    // Initialize the libsensors library
-    sensor_sys::libsensors::init(None);
-    /* libsensors::init() takes an Option<&str> as a parameter
-        if the parameter is None, it reads the configuration file from the default location
-        if the parameter is Some, it reads the configuration file from the specified location
-        */
+    let init_return: i32 = unsafe { sensors_sys::sensors_init(std::ptr::null_mut()) };
+    if init_return != 0 {Err("failed to initialize libsensors")?;}
 
-    // sensors_sys::chips() returns an iterator over all the chips
-    let mut chips = sensors_sys::chips();
     // Iterate over all the chips, find the one with the name we want.
-    while let Some(chip) = chips.next() {
+    let mut chipnum: i32 = 0;
+    loop {
+        // get the next chip as a raw pointer to a sensors_chip_name struct
+        // sensors_get_detected_chips() returns the struct based on the chipnum argument
+        println!("chipnum: {}", chipnum);
+        let chips: *const sensors_sys::sensors_chip_name = unsafe {sensors_sys::sensors_get_detected_chips(std::ptr::null(), &mut chipnum)};
+        if chips.is_null() {println!("all chips read");
+                            unsafe{sensors_sys::sensors_cleanup();}; 
+                            return Ok(());}
+        println!("chip.index: {}", unsafe {*(*chips).prefix});
+        println!("chip.bus: {}", unsafe {((*chips).bus).type_});
+        println!("chip.addr: {}", unsafe {(*chips).addr});
+        println!("chip.path: {:?}", unsafe {(*chips).path});
+        let mut featnum: i32 = 0;
+        loop{
+            let feature = unsafe {sensors_sys::sensors_get_features(chips, &mut featnum)};
+            if feature.is_null() {break;}// all features read for this chip
+            let feature_type = unsafe{(*feature).type_};
+            if feature_type == 2{
+                println!("   type 2 feature located");
+            }
+        }
+        println!("");
+    }
+/*     while let Some(chip) = chips.next() {
         let name = sensors_sys::chip_name(chip);
         if name == chip_name {
             // We found the chip we want.
@@ -46,11 +64,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     // We found the temp feature, print the value.
                     let value = sensors_sys::get_value(chip, feature);
                     println!("{:.1}°C", value); // print value to 1 decimal place
-                    sensor_sys::libsensors::cleanup();
+                    sensors_sys::libsensors::cleanup();
                     return Ok(());
                 }
             }
         }
-    }
-    Err("chip not found")?
+    } */
+    //Err("chip with temp reading not found")?
 }
