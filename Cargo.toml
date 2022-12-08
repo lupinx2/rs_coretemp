@@ -1,7 +1,8 @@
 [package]
-name = "core-temp"
+name = "rs_coretemp"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+#make sure you have libsensors-dev installed
 sensors-sys = "0.2.4"
