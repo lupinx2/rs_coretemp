@@ -6,6 +6,6 @@ I made it as a quick learning project to practice with unsafe Rust bindings and 
 
 should work with any gnu/linux OS  
 Rust version 1.4 or higher  
-`libsensors`, included in most linux distros  
-`libsensors-dev`, available on apt  
+`libsensors` included in most linux distros  
+`libsensors-dev` available on apt  
 `libclang` available on apt  
