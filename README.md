@@ -8,4 +8,10 @@ should work with any gnu/linux OS
 Rust version 1.4 or higher  
 `libsensors` included in most linux distros  
 `libsensors-dev` available on apt  
-`libclang` available on apt  
+`libclang-dev` available on apt  
+
+## Usage
+download (with the button that says Code) or clone the repo,
+then in the repo folder run:  
+`cargo build` 
+`cargo run`
